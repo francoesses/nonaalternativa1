@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Koa · Social v3 · Componentes</title>
+<link rel="stylesheet" href="_ds/koa-health-brand-system-d533c564-4873-4d43-9c35-30457ec27f3c/colors_and_type.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #BAB3A4;
+  font-family: var(--font-body);
+  padding: 52px 44px 96px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Página ── */
+.pg-header { margin-bottom: 48px; }
+.pg-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(42,42,42,0.42); margin-bottom: 10px;
+}
+.pg-title {
+  font-family: var(--font-heading); font-weight: 700;
+  font-size: 22px; letter-spacing: -0.02em; color: #2A2A2A; margin-bottom: 4px;
+}
+.pg-sub { font-size: 13px; color: rgba(42,42,42,0.48); }
+
+/* ── Secciones ── */
+.section-head {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 24px; padding-bottom: 14px;
+  border-bottom: 1px solid rgba(42,42,42,0.14);
+}
+.section-label {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase; color: rgba(42,42,42,0.38);
+}
+.section-name {
+  font-family: var(--font-heading); font-weight: 700;
+  font-size: 15px; color: #2A2A2A;
+}
+.section-note {
+  font-size: 13px; color: rgba(42,42,42,0.42); margin-left: auto;
+}
+
+/* ── Fila de posts ── */
+.posts-row {
+  display: flex; gap: 22px; flex-wrap: wrap;
+  margin-bottom: 60px; align-items: flex-start;
+}
+.post-group {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.post-meta {
+  display: flex; align-items: center; gap: 7px;
+}
+.tag-comp {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  background: #2A2A2A; color: #F2EBD9;
+  padding: 3px 7px; border-radius: 4px;
+}
+.size-label {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  color: rgba(42,42,42,0.30);
+}
+
+/* ── Scale wrappers ── */
+.post-wrap { flex: none; overflow: hidden; border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22), 0 2px 6px rgba(0,0,0,0.10); }
+.post-wrap.sq    { width: calc(1080px * .38); height: calc(1080px * .38); }
+.post-wrap.story { width: calc(1080px * .23); height: calc(1920px * .23); }
+.canvas { transform-origin: top left; display: block; }
+.post-wrap.sq    .canvas { transform: scale(.38); width: 1080px; height: 1080px; }
+.post-wrap.story .canvas { transform: scale(.23); width: 1080px; height: 1920px; }
+
+/* ══════════════════════════════════════════════════════
+   CANVAS-SCALE COMPONENTS
+   Todos los tamaños × 2.63 (1/0.38) respecto al web base
+   ══════════════════════════════════════════════════════ */
+
+/* ── Post base ── */
+.post {
+  position: relative; display: flex; flex-direction: column;
+  justify-content: space-between; overflow: hidden;
+}
+.post.sq    { width: 1080px; height: 1080px; padding: 72px; }
+.post.story { width: 1080px; height: 1920px; padding: 96px 82px; }
+
+/* ── Corner marks ── */
+.cm { position: absolute; border-style: solid; }
+.cm-sm { width: 26px; height: 26px; } /* card-level */
+.cm-lg { width: 34px; height: 34px; } /* post-level */
+.cm.tl { top: var(--pos, 56px);    left: var(--pos, 56px);    border-width: 2.5px 0 0 2.5px; }
+.cm.tr { top: var(--pos, 56px);    right: var(--pos, 56px);   border-width: 2.5px 2.5px 0 0; }
+.cm.bl { bottom: var(--pos, 56px); left: var(--pos, 56px);    border-width: 0 0 2.5px 2.5px; }
+.cm.br { bottom: var(--pos, 56px); right: var(--pos, 56px);   border-width: 0 2.5px 2.5px 0; }
+
+/* ── Mono label / kicker ── */
+.kicker {
+  font-family: var(--font-mono); font-weight: 700;
+  font-size: 22px; letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--ink-3); display: flex; align-items: center; gap: 12px;
+}
+.kicker .slash { color: var(--coral); }
+.kicker.inv { color: var(--slate-3); }
+.kicker.inv .slash { color: var(--coral-bright); }
+
+/* ── Headlines ── */
+.hl {
+  font-family: var(--font-heading); font-weight: 700;
+  letter-spacing: -0.035em; color: var(--ink); line-height: 1.03;
+}
+.hl.inv { color: var(--slate-fg); }
+.hl-xl  { font-size: 118px; }
+.hl-lg  { font-size: 104px; }
+.hl-md  { font-size: 88px; }
+.hl-sm  { font-size: 72px; }
+
+/* Emphasis styles */
+.em-color   { color: var(--coral); }
+.em-chip    { display:inline-block; background:var(--coral); color:#fff; border-radius:16px; padding:0 24px 8px; line-height:1.15; }
+.em-outline { -webkit-text-stroke:3px var(--ink); color:transparent; }
+.em-hi      { background:linear-gradient(180deg,transparent 40%,rgba(94,196,138,.52) 40%); }
+.em-chip-inv{ display:inline-block; background:var(--coral-bright); color:#fff; border-radius:16px; padding:0 24px 8px; line-height:1.15; }
+.em-outline-inv { -webkit-text-stroke:3px var(--slate-fg); color:transparent; }
+
+/* ── Sub / body ── */
+.sub {
+  font-family: var(--font-body); font-size: 30px; line-height: 1.5;
+  color: var(--ink-2);
+}
+.sub.inv { color: var(--slate-2); }
+
+/* ── Lockup ── */
+.lockup { display: flex; align-items: center; gap: 14px; }
+.lockup img { width: 44px; height: 44px; }
+.lockup-word {
+  font-family: var(--font-body); font-weight: 700;
+  font-size: 36px; letter-spacing: -0.03em; color: var(--ink);
+}
+.lockup-word .dot { color: var(--coral); }
+.lockup-word.inv   { color: var(--slate-fg); }
+.lockup-word.inv .dot { color: var(--coral-bright); }
+
+/* ─────────────────────────────────────────────────────
+   COMPONENT: CHIP (light surface)
+   Ref: preview/chips-tags.html
+───────────────────────────────────────────────────── */
+.chip {
+  display: inline-flex; align-items: center; gap: 16px;
+  font-family: var(--font-mono); font-size: 28px; letter-spacing: 0.05em;
+  color: var(--ink-2); background: var(--paper-pure);
+  border: 2px solid var(--ink-line); border-radius: 20px;
+  padding: 16px 34px;
+  box-shadow: var(--shadow-sm);
+}
+.chip.active {
+  background: var(--mint-100); border-color: var(--mint);
+  color: var(--mint-700); box-shadow: 0 0 0 6px rgba(94,196,138,.12);
+}
+.chip.alert {
+  background: var(--coral-100); border-color: var(--coral); color: var(--coral-600);
+}
+.chip-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+
+/* ─────────────────────────────────────────────────────
+   COMPONENT: GLASS TAG (dark)
+   Ref: preview/chips-tags.html
+───────────────────────────────────────────────────── */
+.glass-tag {
+  position: relative; overflow: hidden;
+  display: inline-flex; align-items: center; gap: 18px;
+  font-family: var(--font-mono); font-size: 28px; letter-spacing: 0.06em;
+  color: #ECE6D6;
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  background: rgba(255,255,255,.07); border-radius: 20px;
+  padding: 18px 34px;
+  box-shadow: inset 0 2px 2px rgba(255,255,255,.2),
+              0 0 0 1.5px rgba(255,255,255,.16),
+              0 8px 28px rgba(0,0,0,.28);
+}
+.glass-tag::before {
+  content: ''; position: absolute; inset: 0; border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255,255,255,.18) 0%, transparent 55%);
+  pointer-events: none;
+}
+.glass-tag.pill { border-radius: 999px; padding: 20px 44px; }
+.glass-tag.pill::before { border-radius: 999px; }
+.glass-tag.active {
+  background: rgba(0,184,124,.18);
+  box-shadow: inset 0 2px 2px rgba(255,255,255,.2),
+              0 0 0 1.5px rgba(0,184,124,.5),
+              0 8px 40px rgba(0,184,124,.28);
+}
+.glass-tag .gdot {
+  width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────────
+   COMPONENT: SEPARATOR SYSTEM
+   Ref: preview/chips-tags.html
+───────────────────────────────────────────────────── */
+.sep {
+  font-family: var(--font-mono); font-size: 28px;
+  color: var(--ink-3); display: flex; align-items: center; gap: 20px;
+  flex-wrap: wrap;
+}
+.sep.inv { color: var(--slate-3); }
+.sep-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.sep-slash { color: var(--ink-line); font-size: 38px; font-weight: 300; margin: 0 4px; }
+.sep-slash.inv { color: var(--slate-line); }
+
+/* ─────────────────────────────────────────────────────
+   COMPONENT: BUTTON — LIGHT
+   Ref: preview/btn-light.html
+───────────────────────────────────────────────────── */
+.btn {
+  font-family: var(--font-display); font-weight: 600; font-size: 38px;
+  border-radius: 999px; padding: 30px 64px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 18px;
+  position: relative; overflow: hidden; border: none;
+  letter-spacing: -0.01em;
+}
+.btn::before {
+  content: ''; position: absolute; inset: 0; border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255,255,255,.38) 0%, rgba(255,255,255,0) 55%);
+  pointer-events: none;
+}
+.btn::after {
+  content: ''; position: absolute; inset: 0; border-radius: 999px;
+  box-shadow: inset 0 2px 2px rgba(255,255,255,.7), inset 0 -2px 2px rgba(0,0,0,.05);
+  pointer-events: none;
+}
+.btn.primary {
+  background: var(--mint); color: #14391F;
+  box-shadow: 0 4px 16px rgba(94,196,138,.3), 0 16px 48px rgba(75,160,122,.26);
+}
+.btn.ghost {
+  background: rgba(255,255,255,.55); color: var(--ink);
+  border: 2px solid rgba(42,42,42,.18) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
+  box-shadow: 0 4px 18px rgba(60,48,24,.07);
+}
+.btn .arr { font-family: var(--font-mono); font-weight: 700; }
+
+/* ─────────────────────────────────────────────────────
+   COMPONENT: BUTTON — GLASS (dark)
+   Ref: preview/btn-glass.html
+───────────────────────────────────────────────────── */
+.btn-glass {
+  position: relative; overflow: hidden; border: none; border-radius: 999px;
+  padding: 30px 64px; cursor: pointer;
+  font-family: var(--font-display); font-weight: 600;
+  font-size: 38px; color: #ECE6D6; letter-spacing: -0.01em;
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  background: rgba(255,255,255,.09);
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.26),
+    inset 0 -1px 1px rgba(0,0,0,.12),
+    0 0 0 1.5px rgba(255,255,255,.2),
+    0 16px 48px rgba(0,0,0,.38),
+    0 4px 12px rgba(0,0,0,.18);
+  display: inline-flex; align-items: center; gap: 18px;
+}
+.btn-glass::before {
+  content: ''; position: absolute; inset: 0; border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.04) 50%, transparent 100%);
+  pointer-events: none;
+}
+.btn-glass.teal {
+  background: var(--teal); color: #04241A;
+  box-shadow: 0 16px 48px rgba(0,184,124,.42), 0 4px 12px rgba(0,0,0,.22),
+    inset 0 2px 2px rgba(255,255,255,.32), 0 0 0 1.5px rgba(0,184,124,.6);
+}
+.btn-glass.teal::before { background: linear-gradient(135deg, rgba(255,255,255,.32) 0%, transparent 60%); }
+.btn-glass .arr { font-family: var(--font-mono); font-weight: 700; }
+
+/* ─────────────────────────────────────────────────────
+   COMPONENT: K·O·A STEP BADGES
+   Ref: preview/badges-steps.html
+───────────────────────────────────────────────────── */
+.koa-badge {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 52px; line-height: 1; letter-spacing: -0.03em;
+  width: 92px; height: 92px; display: grid; place-items: center;
+  border-radius: 26px; flex-shrink: 0;
+}
+.badge-k { color: #14391F; background: var(--mint); }
+.badge-o { color: var(--ink-2); background: var(--paper); border: 2.5px solid var(--ink-line); }
+.badge-a { color: #fff; background: var(--coral); }
+/* Dark variants */
+.badge-o-dark { color: var(--slate-2); background: rgba(240,234,216,.1); border: 2px solid rgba(240,234,216,.2); }
+
+/* ─────────────────────────────────────────────────────
+   COMPONENT: CARD + CORNER MARKS
+   Ref: preview/cards.html
+───────────────────────────────────────────────────── */
+.inset-card {
+  position: relative; background: var(--paper-pure);
+  border-radius: 36px; padding: 52px 56px;
+  box-shadow: var(--shadow-md);
+}
+.inset-card .cm-sm { width: 22px; height: 22px; }
+.inset-card .cm-sm.tl { top: 18px; left: 18px; border-width: 2px 0 0 2px; }
+.inset-card .cm-sm.tr { top: 18px; right: 18px; border-width: 2px 2px 0 0; }
+.inset-card .cm-sm.bl { bottom: 18px; left: 18px; border-width: 0 0 2px 2px; }
+.inset-card .cm-sm.br { bottom: 18px; right: 18px; border-width: 0 2px 2px 0; }
+.card-kicker {
+  font-family: var(--font-mono); font-size: 20px; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 16px;
+}
+.card-title {
+  font-family: var(--font-heading); font-weight: 700;
+  font-size: 54px; line-height: 1.1; letter-spacing: -0.025em; color: var(--ink);
+  margin-bottom: 14px;
+}
+.card-body {
+  font-family: var(--font-body); font-size: 28px;
+  line-height: 1.45; color: var(--ink-2);
+}
+
+</style>
+</head>
+<body>
+
+<div class="pg-header">
+  <div class="pg-eyebrow">koa · social v3 · componentes</div>
+  <div class="pg-title">Chips, tags, botones, badges, cards, separadores</div>
+  <div class="pg-sub">Cada pieza usa 1–2 componentes del sistema. Minimalista, nunca acumulado.</div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     CREAM REGISTER
+     ══════════════════════════════════════════════════════ -->
+<div class="section-head">
+  <div class="section-label">registro</div>
+  <div class="section-name">Cream · componentes en fondo claro</div>
+</div>
+
+<div class="posts-row">
+
+  <!-- P1 · CHIP active + SEPARADOR -->
+  <div class="post-group">
+    <div class="post-wrap sq">
+      <div class="canvas">
+        <div class="post sq" style="background:var(--cream)">
+          <span class="cm cm-lg tl" style="border-color:var(--coral)"></span>
+          <span class="cm cm-lg tr" style="border-color:var(--coral)"></span>
+          <span class="cm cm-lg bl" style="border-color:var(--coral)"></span>
+          <span class="cm cm-lg br" style="border-color:var(--coral)"></span>
+
+          <div>
+            <div class="kicker" style="margin-bottom:44px">
+              primer nivel<span class="slash">/</span>atención
+            </div>
+            <div class="hl hl-xl">
+              Gratis,<br><span class="em-color">de verdad.</span>
+            </div>
+          </div>
+
+          <div>
+            <!-- chip component -->
+            <div style="margin-bottom:44px">
+              <span class="chip active">
+                <span class="chip-dot" style="background:var(--mint)"></span>
+                sin obra social
+              </span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <!-- separator component -->
+              <div class="sep">
+                gratis
+                <span class="sep-dot" style="background:var(--mint)"></span>
+                24/7
+                <span class="sep-dot" style="background:var(--coral)"></span>
+                médico real
+              </div>
+              <div class="lockup">
+                <img src="assets/koa-isotipo.svg" alt="">
+                <span class="lockup-word">koa<span class="dot">.</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="post-meta">
+      <span class="tag-comp">chip</span>
+      <span class="tag-comp" style="background:#6B6660">sep</span>
+      <span class="size-label">1:1</span>
+    </div>
+  </div>
+
+  <!-- P3 · CARD INSET con corner marks -->
+  <div class="post-group">
+    <div class="post-wrap sq">
+      <div class="canvas">
+        <div class="post sq" style="background:var(--paper)">
+
+          <div>
+            <div class="kicker" style="margin-bottom:56px">
+              n2<span class="slash">/</span>triage
+            </div>
+            <div class="hl hl-md" style="margin-bottom:44px">
+              Te preguntamos<br>lo justo.
+            </div>
+          </div>
+
+          <!-- inset card component -->
+          <div>
+            <div class="inset-card">
+              <span class="cm-sm tl" style="border-color:var(--coral); position:absolute; top:20px; left:20px; border-width:2px 0 0 2px; width:22px; height:22px; border-style:solid;"></span>
+              <span class="cm-sm tr" style="border-color:var(--coral); position:absolute; top:20px; right:20px; border-width:2px 2px 0 0; width:22px; height:22px; border-style:solid;"></span>
+              <span class="cm-sm bl" style="border-color:var(--coral); position:absolute; bottom:20px; left:20px; border-width:0 0 2px 2px; width:22px; height:22px; border-style:solid;"></span>
+              <span class="cm-sm br" style="border-color:var(--coral); position:absolute; bottom:20px; right:20px; border-width:0 2px 2px 0; width:22px; height:22px; border-style:solid;"></span>
+              <div class="card-kicker">consulta · koa</div>
+              <div class="card-title">Nada de formularios. Charlamos y listo.</div>
+              <div class="card-body">En minutos entendemos qué te pasa y te pasamos con un médico.</div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;margin-top:36px">
+              <div class="lockup">
+                <img src="assets/koa-isotipo.svg" alt="">
+                <span class="lockup-word">koa<span class="dot">.</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="post-meta">
+      <span class="tag-comp">card</span>
+      <span class="tag-comp" style="background:#6B6660">corner marks</span>
+      <span class="size-label">1:1</span>
+    </div>
+  </div>
+
+  <!-- P4 · BADGES K·O·A -->
+  <div class="post-group">
+    <div class="post-wrap sq">
+      <div class="canvas">
+        <div class="post sq" style="background:var(--paper)">
+
+          <div>
+            <div class="kicker" style="margin-bottom:52px">cómo funciona</div>
+            <div class="hl hl-lg">
+              En 3<br><span class="em-hi">pasos.</span>
+            </div>
+          </div>
+
+          <!-- K·O·A badges -->
+          <div style="display:flex;flex-direction:column;gap:0;border-top:1px solid var(--ink-line)">
+
+            <div style="display:flex;align-items:center;gap:36px;padding:38px 0;border-bottom:1px solid var(--ink-line)">
+              <div class="koa-badge badge-k">K</div>
+              <div>
+                <div style="font-family:var(--font-heading);font-weight:700;font-size:42px;color:var(--ink);letter-spacing:-0.02em;margin-bottom:6px">Escribís</div>
+                <div style="font-family:var(--font-body);font-size:26px;color:var(--ink-2);line-height:1.4">Por WhatsApp, como a un amigo.</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:36px;padding:38px 0;border-bottom:1px solid var(--ink-line)">
+              <div class="koa-badge badge-o">O</div>
+              <div>
+                <div style="font-family:var(--font-heading);font-weight:700;font-size:42px;color:var(--ink);letter-spacing:-0.02em;margin-bottom:6px">Triage IA</div>
+                <div style="font-family:var(--font-body);font-size:26px;color:var(--ink-2);line-height:1.4">Koa ordena y prioriza tu consulta.</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:36px;padding:38px 0">
+              <div class="koa-badge badge-a">A</div>
+              <div>
+                <div style="font-family:var(--font-heading);font-weight:700;font-size:42px;color:var(--ink);letter-spacing:-0.02em;margin-bottom:6px">Médico real</div>
+                <div style="font-family:var(--font-body);font-size:26px;color:var(--ink-2);line-height:1.4">Un profesional te atiende. Gratis.</div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="lockup">
+            <img src="assets/koa-isotipo.svg" alt="">
+            <span class="lockup-word">koa<span class="dot">.</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="post-meta">
+      <span class="tag-comp">badges K·O·A</span>
+      <span class="size-label">1:1</span>
+    </div>
+  </div>
+
+  <!-- P6 · DOS BOTONES primary + ghost -->
+  <div class="post-group">
+    <div class="post-wrap sq">
+      <div class="canvas">
+        <div class="post sq" style="background:var(--cream)">
+          <span class="cm cm-lg tl" style="border-color:var(--mint)"></span>
+          <span class="cm cm-lg tr" style="border-color:var(--mint)"></span>
+          <span class="cm cm-lg bl" style="border-color:var(--mint)"></span>
+          <span class="cm cm-lg br" style="border-color:var(--mint)"></span>
+
+          <div>
+            <div class="kicker" style="margin-bottom:44px">sin turno<span class="slash">/</span>gratis</div>
+            <div class="hl hl-lg">
+              El médico de<br><span class="em-chip">cabecera</span><br>que siempre<br>quisiste.
+            </div>
+          </div>
+
+          <!-- dos botones -->
+          <div>
+            <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:40px">
+              <button class="btn primary">Escribir ahora <span class="arr">→</span></button>
+              <button class="btn ghost">Cómo funciona</button>
+            </div>
+            <div class="lockup">
+              <img src="assets/koa-isotipo.svg" alt="">
+              <span class="lockup-word">koa<span class="dot">.</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="post-meta">
+      <span class="tag-comp">btn primary</span>
+      <span class="tag-comp" style="background:#6B6660">btn ghost</span>
+      <span class="size-label">1:1</span>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     MIDNIGHT REGISTER
+     ══════════════════════════════════════════════════════ -->
+<div class="section-head">
+  <div class="section-label">registro</div>
+  <div class="section-name">Midnight · componentes en fondo oscuro</div>
+</div>
+
+<div class="posts-row">
+
+  <!-- P2 · GLASS TAG pill + BOTÓN TEAL GLASS -->
+  <div class="post-group">
+    <div class="post-wrap sq">
+      <div class="canvas">
+        <div class="post sq" style="background:var(--midnight)">
+          <!-- radial glow -->
+          <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 70% at 18% 30%,rgba(0,184,124,.22) 0%,transparent 64%),radial-gradient(ellipse 55% 50% at 82% 14%,rgba(255,82,48,.18) 0%,transparent 60%)"></div>
+
+          <div>
+            <!-- glass tag pill -->
+            <div style="margin-bottom:52px">
+              <span class="glass-tag pill active">
+                <span class="gdot" style="background:var(--teal);box-shadow:0 0 14px rgba(0,184,124,.8)"></span>
+                disponible 24/7
+              </span>
+            </div>
+            <div class="hl hl-xl inv">
+              Siempre hay<br>alguien del<br><span class="em-outline-inv">otro lado.</span>
+            </div>
+          </div>
+
+          <!-- teal glass button -->
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-end">
+              <button class="btn-glass teal">Escribir ahora <span class="arr">→</span></button>
+              <div class="lockup">
+                <img src="assets/koa-isotipo-dark.svg" alt="">
+                <span class="lockup-word inv">koa<span class="dot">.</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="post-meta">
+      <span class="tag-comp" style="background:#1C2130">glass tag</span>
+      <span class="tag-comp" style="background:#00856A">btn teal</span>
+      <span class="size-label">1:1</span>
+    </div>
+  </div>
+
+  <!-- P5 · CLUSTER GLASS TAGS + énfasis chip -->
+  <div class="post-group">
+    <div class="post-wrap sq">
+      <div class="canvas">
+        <div class="post sq" style="background:var(--midnight)">
+          <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 60% at 78% 20%,rgba(255,82,48,.18) 0%,transparent 58%),radial-gradient(ellipse 55% 55% at 16% 72%,rgba(0,184,124,.16) 0%,transparent 58%)"></div>
+
+          <div>
+            <!-- cluster de glass tags como decoración -->
+            <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:60px">
+              <span class="glass-tag">sin turno</span>
+              <span class="glass-tag active"><span class="gdot" style="background:var(--teal);box-shadow:0 0 10px rgba(0,184,124,.7)"></span>gratis</span>
+              <span class="glass-tag">24/7</span>
+              <span class="glass-tag" style="color:var(--coral-bright);box-shadow:inset 0 2px 2px rgba(255,255,255,.2),0 0 0 1.5px rgba(255,82,48,.4),0 8px 32px rgba(255,82,48,.18)"><span class="gdot" style="background:#FF5230"></span>urgente</span>
+            </div>
+            <div class="hl hl-xl inv">
+              ¿Te sentís<br><span class="em-chip-inv">mal?</span>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:flex-end">
+            <div class="sub inv">Escribinos. En minutos<br>hablás con un médico.</div>
+            <div class="lockup">
+              <img src="assets/koa-isotipo-dark.svg" alt="">
+              <span class="lockup-word inv">koa<span class="dot">.</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="post-meta">
+      <span class="tag-comp" style="background:#1C2130">glass tags cluster</span>
+      <span class="size-label">1:1</span>
+    </div>
+  </div>
+
+  <!-- EXTRA · GLASS BTN liquid + chips dark alerts -->
+  <div class="post-group">
+    <div class="post-wrap sq">
+      <div class="canvas">
+        <div class="post sq" style="background:var(--midnight)">
+          <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 60% at 20% 25%,rgba(0,184,124,.26) 0%,transparent 62%)"></div>
+
+          <div>
+            <div class="kicker inv" style="margin-bottom:52px">
+              sin obra social<span class="slash">/</span>sin turno
+            </div>
+            <div class="hl hl-xl inv">
+              Gratis,<br><span class="em-chip-inv">de verdad.</span>
+            </div>
+          </div>
+
+          <div>
+            <!-- liquid glass button -->
+            <div style="margin-bottom:44px">
+              <button class="btn-glass">Escribir ahora <span class="arr">→</span></button>
+            </div>
+            <!-- separator inv -->
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div class="sep inv">
+                gratis
+                <span class="sep-dot" style="background:var(--teal)"></span>
+                24/7
+                <span class="sep-dot" style="background:var(--coral-bright)"></span>
+                médico real
+              </div>
+              <div class="lockup">
+                <img src="assets/koa-isotipo-dark.svg" alt="">
+                <span class="lockup-word inv">koa<span class="dot">.</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="post-meta">
+      <span class="tag-comp" style="background:#1C2130">btn glass</span>
+      <span class="tag-comp" style="background:#6B6660">sep inv</span>
+      <span class="size-label">1:1</span>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     STORIES 9:16
+     ══════════════════════════════════════════════════════ -->
+<div class="section-head">
+  <div class="section-label">formato</div>
+  <div class="section-name">Stories 9:16 · componentes en acción</div>
+</div>
+
+<div class="posts-row">
+
+  <!-- Story 1 · CREAM · card corner marks + btn primary + sep -->
+  <div class="post-group">
+    <div class="post-wrap story">
+      <div class="canvas">
+        <div class="post story" style="background:var(--cream)">
+          <span class="cm cm-lg tl" style="border-color:var(--coral)"></span>
+          <span class="cm cm-lg tr" style="border-color:var(--coral)"></span>
+          <span class="cm cm-lg bl" style="border-color:var(--coral)"></span>
+          <span class="cm cm-lg br" style="border-color:var(--coral)"></span>
+
+          <!-- top -->
+          <div>
+            <div class="lockup" style="margin-bottom:72px">
+              <img src="assets/koa-isotipo.svg" alt="">
+              <span class="lockup-word">koa<span class="dot">.</span></span>
+            </div>
+            <div class="kicker" style="margin-bottom:44px">
+              sin turno<span class="slash">/</span>gratis
+            </div>
+            <div class="hl" style="font-size:128px;line-height:1.02;letter-spacing:-0.038em;color:var(--ink)">
+              Escribís.<br>Te<br><span class="em-color">atendemos.</span>
+            </div>
+          </div>
+
+          <!-- card inset -->
+          <div class="inset-card" style="margin:0">
+            <span style="border-color:var(--coral);position:absolute;top:20px;left:20px;border-width:2px 0 0 2px;width:22px;height:22px;border-style:solid;"></span>
+            <span style="border-color:var(--coral);position:absolute;top:20px;right:20px;border-width:2px 2px 0 0;width:22px;height:22px;border-style:solid;"></span>
+            <span style="border-color:var(--coral);position:absolute;bottom:20px;left:20px;border-width:0 0 2px 2px;width:22px;height:22px;border-style:solid;"></span>
+            <span style="border-color:var(--coral);position:absolute;bottom:20px;right:20px;border-width:0 2px 2px 0;width:22px;height:22px;border-style:solid;"></span>
+            <div class="card-kicker">n1 · por WhatsApp</div>
+            <div class="card-title">Sin instalar nada. Solo escribís.</div>
+            <div class="card-body">Un médico real te atiende en minutos.</div>
+          </div>
+
+          <!-- bottom -->
+          <div>
+            <div style="margin-bottom:48px">
+              <button class="btn primary" style="width:100%;justify-content:center">
+                Escribir ahora <span class="arr">→</span>
+              </button>
+            </div>
+            <div class="sep" style="justify-content:center">
+              gratis
+              <span class="sep-dot" style="background:var(--mint)"></span>
+              24/7
+              <span class="sep-dot" style="background:var(--coral)"></span>
+              médico real
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="post-meta">
+      <span class="tag-comp">card</span>
+      <span class="tag-comp" style="background:#00856A">btn</span>
+      <span class="tag-comp" style="background:#6B6660">sep</span>
+      <span class="size-label">9:16</span>
+    </div>
+  </div>
+
+  <!-- Story 2 · MIDNIGHT · glass tag + K·O·A badges + teal button -->
+  <div class="post-group">
+    <div class="post-wrap story">
+      <div class="canvas">
+        <div class="post story" style="background:var(--midnight)">
+          <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 75% 50% at 20% 22%,rgba(0,184,124,.22) 0%,transparent 60%),radial-gradient(ellipse 60% 45% at 80% 10%,rgba(255,82,48,.18) 0%,transparent 55%),radial-gradient(ellipse 50% 40% at 55% 90%,rgba(0,184,124,.12) 0%,transparent 58%)"></div>
+
+          <!-- top -->
+          <div>
+            <div class="lockup" style="margin-bottom:60px">
+              <img src="assets/koa-isotipo-dark.svg" alt="">
+              <span class="lockup-word inv">koa<span class="dot">.</span></span>
+            </div>
+            <!-- glass floating tag -->
+            <div style="margin-bottom:56px">
+              <span class="glass-tag pill active">
+                <span class="gdot" style="background:var(--teal);box-shadow:0 0 14px rgba(0,184,124,.8)"></span>
+                en línea ahora
+              </span>
+            </div>
+            <div class="hl inv" style="font-size:120px;line-height:1.04;letter-spacing:-0.038em">
+              Cómo funciona<br>en <span class="em-hi" style="background:linear-gradient(180deg,transparent 40%,rgba(94,196,138,.38) 40%)">3 pasos.</span>
+            </div>
+          </div>
+
+          <!-- K·O·A badges on dark -->
+          <div style="display:flex;flex-direction:column;gap:0;border-top:1px solid var(--slate-line)">
+            <div style="display:flex;align-items:center;gap:36px;padding:44px 0;border-bottom:1px solid var(--slate-line)">
+              <div class="koa-badge badge-k" style="flex-shrink:0">K</div>
+              <div>
+                <div style="font-family:var(--font-heading);font-weight:700;font-size:40px;color:var(--slate-fg);letter-spacing:-0.02em;margin-bottom:6px">Escribís</div>
+                <div style="font-family:var(--font-body);font-size:24px;color:var(--slate-2);line-height:1.4">Por WhatsApp. Sin instalar nada.</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:36px;padding:44px 0;border-bottom:1px solid var(--slate-line)">
+              <div class="koa-badge badge-o-dark" style="flex-shrink:0">O</div>
+              <div>
+                <div style="font-family:var(--font-heading);font-weight:700;font-size:40px;color:var(--slate-fg);letter-spacing:-0.02em;margin-bottom:6px">Triage IA</div>
+                <div style="font-family:var(--font-body);font-size:24px;color:var(--slate-2);line-height:1.4">Koa ordena lo importante.</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:36px;padding:44px 0">
+              <div class="koa-badge badge-a" style="flex-shrink:0">A</div>
+              <div>
+                <div style="font-family:var(--font-heading);font-weight:700;font-size:40px;color:var(--slate-fg);letter-spacing:-0.02em;margin-bottom:6px">Médico real</div>
+                <div style="font-family:var(--font-body);font-size:24px;color:var(--slate-2);line-height:1.4">Un profesional te atiende. Gratis.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- teal button -->
+          <button class="btn-glass teal" style="width:100%;justify-content:center">
+            Escribir ahora <span class="arr">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="post-meta">
+      <span class="tag-comp" style="background:#1C2130">glass tag</span>
+      <span class="tag-comp" style="background:#2A2A2A">badges</span>
+      <span class="tag-comp" style="background:#00856A">btn teal</span>
+      <span class="size-label">9:16</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
